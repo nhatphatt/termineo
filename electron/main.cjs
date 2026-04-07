@@ -56,7 +56,7 @@ function startPtyHost() {
   const ptyHostPath = resolveUnpacked(path.join(__dirname, "pty-host.cjs"));
 
   ptyHost = spawn(process.execPath, [ptyHostPath], {
-    stdio: ["pipe", "pipe", "pipe", "ipc"],
+    stdio: ["ignore", "ignore", "ignore", "ipc"],
     env: { ...process.env, ELECTRON_RUN_AS_NODE: "1" },
   });
 
@@ -84,9 +84,6 @@ function startPtyHost() {
     }
   });
 
-  ptyHost.stderr.on("data", (data) => {
-    console.error("PTY host stderr:", data.toString());
-  });
 
   ptyHost.on("exit", (code) => {
     console.log("PTY host exited with code", code);
