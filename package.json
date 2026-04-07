@@ -28,7 +28,6 @@
   },
   "dependencies": {
     "@xterm/addon-fit": "^0.11.0",
-    "@xterm/addon-webgl": "^0.19.0",
     "@xterm/xterm": "^6.0.0",
     "node-pty": "^1.1.0",
     "react": "^19.2.4",
@@ -47,6 +46,7 @@
     "files": [
       "dist/**/*",
       "electron/**/*",
+      "!node_modules",
       "node_modules/node-pty/**/*"
     ],
     "win": {
