@@ -2,8 +2,17 @@
  * PTY Host — runs as Electron utilityProcess.
  * Uses process.parentPort for IPC with main process.
  */
-const pty = require("node-pty");
 const os = require("os");
+const path = require("path");
+
+// In packaged app, node-pty is in app.asar.unpacked
+let pty;
+try {
+  pty = require("node-pty");
+} catch {
+  const unpackedPath = path.join(__dirname, "../node_modules/node-pty").replace("app.asar", "app.asar.unpacked");
+  pty = require(unpackedPath);
+}
 
 /** @type {Map<string, import('node-pty').IPty>} */
 const sessions = new Map();

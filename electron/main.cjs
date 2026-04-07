@@ -5,8 +5,16 @@ const fs = require("fs");
 let mainWindow;
 let ptyHost;
 
+// In packaged app, asarUnpack puts files in app.asar.unpacked/
+function getElectronPath(filename) {
+  const normal = path.join(__dirname, filename);
+  const unpacked = normal.replace("app.asar", "app.asar.unpacked");
+  return fs.existsSync(unpacked) ? unpacked : normal;
+}
+
 function startPtyHost() {
-  ptyHost = utilityProcess.fork(path.join(__dirname, "pty-host.cjs"));
+  const ptyHostPath = getElectronPath("pty-host.cjs");
+  ptyHost = utilityProcess.fork(ptyHostPath);
 
   ptyHost.on("message", (msg) => {
     if (!mainWindow) return;
@@ -47,8 +55,9 @@ function createWindow() {
     backgroundColor: "#0d1117",
     frame: false,
     transparent: false,
+    icon: path.join(__dirname, "../build/icon.png"),
     webPreferences: {
-      preload: path.join(__dirname, "preload.cjs"),
+      preload: getElectronPath("preload.cjs"),
       contextIsolation: true,
       nodeIntegration: false,
     },
@@ -57,7 +66,7 @@ function createWindow() {
   if (process.env.VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
   } else {
-    mainWindow.loadFile(path.join(__dirname, "../dist/index.html"));
+    mainWindow.loadFile(path.join(app.getAppPath(), "dist/index.html"));
   }
 
   mainWindow.on("closed", () => {

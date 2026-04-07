@@ -20,6 +20,8 @@
     "electron": "^41.1.1",
     "electron-builder": "^26.8.1",
     "esbuild": "^0.28.0",
+    "png-to-ico": "^3.0.1",
+    "sharp": "^0.34.5",
     "typescript": "~6.0.2",
     "vite": "^8.0.4",
     "wait-on": "^8.0.5"
@@ -37,20 +39,19 @@
     "appId": "com.termineo.app",
     "productName": "Termineo",
     "npmRebuild": false,
+    "asar": true,
+    "asarUnpack": [
+      "electron/**/*",
+      "node_modules/node-pty/**/*"
+    ],
     "files": [
       "dist/**/*",
       "electron/**/*",
       "node_modules/node-pty/**/*"
     ],
-    "extraResources": [
-      {
-        "from": "node_modules/node-pty",
-        "to": "node-pty",
-        "filter": ["**/*"]
-      }
-    ],
     "win": {
-      "target": "portable"
+      "target": "portable",
+      "icon": "build/icon.ico"
     },
     "mac": {
       "target": "dmg"
