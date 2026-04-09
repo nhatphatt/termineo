@@ -8,7 +8,6 @@ interface Props {
 export function TerminalBlock({ block }: Props) {
   const toggleCollapse = useBlockStore((s) => s.toggleCollapse);
 
-  const isRunning = block.exitCode === null;
   const isError = block.exitCode !== null && block.exitCode !== 0;
 
   return (
@@ -19,21 +18,19 @@ export function TerminalBlock({ block }: Props) {
         onKeyDown={(e) => e.key === "Enter" && toggleCollapse(block.id)}
         role="button"
         tabIndex={0}
-      >
-        <span className="block-chevron">{block.collapsed ? "▶" : "▼"}</span>
-        <span className="block-command">{block.command || "…"}</span>
-        <span className="block-status">
-          {isRunning ? (
-            <span className="status-running">●</span>
-          ) : (
-            <span
-              className={`status-code ${isError ? "status-error" : "status-ok"}`}
-            >
-              {block.exitCode}
+        >
+          <span className="block-chevron">{block.collapsed ? "▶" : "▼"}</span>
+          <span className="block-command">{block.command || "…"}</span>
+          {block.exitCode !== null && (
+            <span className="block-status">
+              <span
+                className={`status-code ${isError ? "status-error" : "status-ok"}`}
+              >
+                {block.exitCode}
+              </span>
             </span>
           )}
-        </span>
-      </div>
+        </div>
 
       <style>{`
         .terminal-block {
