@@ -1,39 +1,23 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect } from "react";
 import type { Terminal } from "@xterm/xterm";
 import { XTermRenderer } from "./XTermRenderer";
 import { usePty } from "../../hooks/usePty";
-import { useBlocks } from "../../hooks/useBlocks";
-import { TerminalBlock } from "./TerminalBlock";
 
 interface Props {
   sessionId: string;
   visible: boolean;
+  focused?: boolean;
+  onFocusRequest?: () => void;
 }
 
 /**
- * BlockList manages the terminal view for a session.
- *
- * Phase 1 approach: Single xterm.js instance per session that receives all PTY output.
- * Block detection (splitting output into command blocks) will be layered on top
- * in Phase 1 Week 2 using OSC 133 markers or prompt heuristics.
- *
- * For now, this is a full-screen terminal that connects to the PTY backend.
+ * BlockList hosts the xterm instance for a pane and wires it up to the PTY.
+ * Block detection will be added later via OSC 133 markers.
  */
-export function BlockList({ sessionId, visible }: Props) {
+export function BlockList({ sessionId, visible, focused, onFocusRequest }: Props) {
   const [terminal, setTerminal] = useState<Terminal | null>(null);
   const [fitFn, setFitFn] = useState<(() => void) | null>(null);
-  const inputBufferRef = useRef("");
   const { resize } = usePty(sessionId, terminal);
-  const { blocks, createBlock, finishBlock } = useBlocks(sessionId);
-
-  const flushCommandHistory = useCallback(() => {
-    const command = inputBufferRef.current.trim();
-    inputBufferRef.current = "";
-    if (!command) return;
-
-    const blockId = createBlock(command);
-    finishBlock(blockId, 0);
-  }, [createBlock, finishBlock]);
 
   const handleTerminalReady = useCallback(
     (term: Terminal, fit: () => void) => {
@@ -59,55 +43,21 @@ export function BlockList({ sessionId, visible }: Props) {
     }
   }, [visible, fitFn]);
 
+  // Focus the terminal when this pane becomes the active one
   useEffect(() => {
-    if (!terminal) return;
-
-    const disposable = terminal.onData((data) => {
-      for (const char of data) {
-        switch (char) {
-          case "\r":
-            flushCommandHistory();
-            break;
-          case "\u007F":
-            inputBufferRef.current = inputBufferRef.current.slice(0, -1);
-            break;
-          case "\u0015":
-            inputBufferRef.current = "";
-            break;
-          default:
-            if (char >= " " && char !== "\u007F") {
-              inputBufferRef.current += char;
-            }
-            break;
-        }
-      }
-    });
-
-    return () => disposable.dispose();
-  }, [terminal, flushCommandHistory]);
+    if (focused && visible && terminal) {
+      const id = requestAnimationFrame(() => terminal.focus());
+      return () => cancelAnimationFrame(id);
+    }
+  }, [focused, visible, terminal]);
 
   return (
     <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
-      {blocks.length > 0 && (
-        <div className="history-panel">
-          {blocks.map((block) => (
-            <TerminalBlock key={block.id} block={block} />
-          ))}
-        </div>
-      )}
       <XTermRenderer
         onTerminalReady={handleTerminalReady}
         onResize={handleResize}
+        onContainerMouseDown={onFocusRequest}
       />
-      <style>{`
-        .history-panel {
-          max-height: 160px;
-          overflow: auto;
-          padding: 8px 8px 0;
-          border-bottom: 1px solid var(--border);
-          background: rgba(255, 255, 255, 0.02);
-        }
-      `}</style>
     </div>
   );
 }

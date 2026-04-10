@@ -5,7 +5,7 @@ import { useBlockStore, type Block } from "../stores/blockStore";
  * Hook for block management within a session.
  */
 export function useBlocks(sessionId: string) {
-  const blocks = useBlockStore((s) => s.getSessionBlocks(sessionId));
+  const blocks = useBlockStore((s) => s.blocks).filter((b) => b.sessionId === sessionId);
   const addBlock = useBlockStore((s) => s.addBlock);
   const finishBlock = useBlockStore((s) => s.finishBlock);
   const toggleCollapse = useBlockStore((s) => s.toggleCollapse);

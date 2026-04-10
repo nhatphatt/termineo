@@ -91,6 +91,10 @@ function startPtyHost() {
 }
 
 function createWindow() {
+  const rendererPath = app.isPackaged
+    ? path.join(process.resourcesPath, "app.asar", "dist", "index.html")
+    : path.join(app.getAppPath(), "dist", "index.html");
+
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
@@ -111,8 +115,20 @@ function createWindow() {
   if (process.env.VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
   } else {
-    mainWindow.loadFile(path.join(app.getAppPath(), "dist/index.html"));
+    mainWindow.loadFile(rendererPath);
   }
+
+  mainWindow.webContents.on("did-fail-load", (_event, errorCode, errorDescription, validatedURL) => {
+    console.error("Renderer failed to load:", { errorCode, errorDescription, validatedURL, rendererPath });
+  });
+
+  mainWindow.webContents.on("render-process-gone", (_event, details) => {
+    console.error("Renderer process gone:", details);
+  });
+
+  mainWindow.webContents.on("console-message", (_event, level, message, line, sourceId) => {
+    console.log(`[renderer:${level}] ${message} (${sourceId}:${line})`);
+  });
 
   mainWindow.on("closed", () => {
     mainWindow = null;
@@ -194,6 +210,19 @@ ipcMain.handle("util:selectDirectory", async () => {
   if (!mainWindow) return null;
   const result = await dialog.showOpenDialog(mainWindow, {
     properties: ["openDirectory"],
+  });
+  if (result.canceled || result.filePaths.length === 0) return null;
+  return result.filePaths[0];
+});
+
+ipcMain.handle("util:selectProgram", async () => {
+  if (!mainWindow) return null;
+  const result = await dialog.showOpenDialog(mainWindow, {
+    properties: ["openFile"],
+    filters: [
+      { name: "Programs", extensions: ["exe", "cmd", "bat", "ps1"] },
+      { name: "All Files", extensions: ["*"] },
+    ],
   });
   if (result.canceled || result.filePaths.length === 0) return null;
   return result.filePaths[0];

@@ -130,9 +130,133 @@ html, body, #root {
   background: var(--bg-primary);
 }
 
+.tab-drop-before,
+.tab-drop-after {
+  position: relative;
+}
+.tab-drop-before::before,
+.tab-drop-after::after {
+  content: "";
+  position: absolute;
+  background: var(--accent);
+  border-radius: 2px;
+}
+.tab-bar-top .tab-drop-before::before,
+.tab-bar-bottom .tab-drop-before::before,
+.tab-bar-top .tab-drop-after::after,
+.tab-bar-bottom .tab-drop-after::after {
+  top: 4px;
+  bottom: 4px;
+  width: 2px;
+}
+.tab-bar-top .tab-drop-before::before,
+.tab-bar-bottom .tab-drop-before::before { left: -1px; }
+.tab-bar-top .tab-drop-after::after,
+.tab-bar-bottom .tab-drop-after::after { right: -1px; }
+
+.tab-bar-left .tab-drop-before::before,
+.tab-bar-right .tab-drop-before::before,
+.tab-bar-left .tab-drop-after::after,
+.tab-bar-right .tab-drop-after::after {
+  left: 4px;
+  right: 4px;
+  height: 2px;
+}
+.tab-bar-left .tab-drop-before::before,
+.tab-bar-right .tab-drop-before::before { top: -1px; }
+.tab-bar-left .tab-drop-after::after,
+.tab-bar-right .tab-drop-after::after { bottom: -1px; }
+
 .tab-vertical {
   padding: 6px 10px;
   border-radius: 6px;
+}
+
+/* ── Pane split ── */
+.split-pane {
+  width: 100%;
+  height: 100%;
+}
+
+.pty-pane {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.pty-pane-active::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border: 1px solid rgba(88, 166, 255, 0.35);
+  border-radius: 2px;
+}
+
+.pane-body {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  position: relative;
+}
+
+.pane-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 24px;
+  padding: 0 8px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-secondary);
+  user-select: none;
+  flex-shrink: 0;
+}
+.pane-header-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pane-header-close {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pane-header-close:hover {
+  background: #e81123;
+  color: #fff;
+}
+
+.pane-divider {
+  background: var(--border);
+  flex-shrink: 0;
+  position: relative;
+  transition: background 0.12s;
+}
+.pane-divider:hover,
+.pane-divider:active {
+  background: var(--accent);
+}
+.pane-divider-row {
+  width: 4px;
+  cursor: col-resize;
+}
+.pane-divider-column {
+  height: 4px;
+  cursor: row-resize;
 }
 
 .tab-label {

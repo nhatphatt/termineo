@@ -2,9 +2,10 @@ import { useEffect } from "react";
 import { TabBar, WindowControls } from "./components/shared/TabBar";
 import { SettingsPanel } from "./components/shared/SettingsPanel";
 import { UpdateNotification } from "./components/shared/UpdateNotification";
-import { BlockList } from "./components/terminal/BlockList";
+import { PaneView } from "./components/terminal/PaneView";
 import { useSessionStore } from "./stores/sessionStore";
 import { useSettingsStore } from "./stores/settingsStore";
+import { useGlobalShortcuts } from "./hooks/useGlobalShortcuts";
 
 export default function App() {
   const sessions = useSessionStore((s) => s.sessions);
@@ -12,6 +13,8 @@ export default function App() {
   const createSession = useSessionStore((s) => s.createSession);
   const tabPosition = useSettingsStore((s) => s.tabPosition);
   const colors = useSettingsStore((s) => s.terminalColors);
+
+  useGlobalShortcuts();
 
   useEffect(() => {
     if (sessions.length === 0) {
@@ -42,7 +45,7 @@ export default function App() {
               key={s.id}
               className={`terminal-pane ${isActive ? "terminal-pane-active" : "terminal-pane-hidden"}`}
             >
-              <BlockList sessionId={s.id} visible={isActive} />
+              <PaneView sessionId={s.id} node={s.root} visible={isActive} />
             </div>
           );
         })}

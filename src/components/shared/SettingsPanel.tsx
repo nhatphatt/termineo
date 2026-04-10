@@ -7,6 +7,7 @@ import {
   type CursorStyle,
 } from "../../stores/settingsStore";
 import { setWindowOpacity, getAvailableShells, selectDirectory } from "../../lib/ipc";
+import { useSessionStore } from "../../stores/sessionStore";
 
 const COLOR_LABELS: Record<keyof TerminalColors, string> = {
   background: "Background",
@@ -54,6 +55,7 @@ export function SettingsPanel() {
 
   const [shells, setShells] = useState<{ label: string; path: string }[]>([]);
   const [customShell, setCustomShell] = useState("");
+  const createSession = useSessionStore((s) => s.createSession);
 
   // Detect available shells on mount
   useEffect(() => {
@@ -69,7 +71,10 @@ export function SettingsPanel() {
 
   const handleSelectDir = async () => {
     const dir = await selectDirectory().catch(() => null);
-    if (dir) setDefaultWorkingDir(dir);
+    if (!dir) return;
+    setDefaultWorkingDir(dir);
+    const folderName = dir.split(/[/\\]/).filter(Boolean).pop() || "Shell";
+    createSession(folderName);
   };
 
   const isKnownShell = shells.some((s) => s.path === shellPath);

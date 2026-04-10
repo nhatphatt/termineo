@@ -27,6 +27,7 @@ interface ElectronAPI {
   onUpdaterDownloaded: (callback: () => void) => () => void;
   getAvailableShells: () => Promise<{ label: string; path: string }[]>;
   selectDirectory: () => Promise<string | null>;
+  selectProgram: () => Promise<string | null>;
   openExternal: (url: string) => Promise<void>;
 }
 
@@ -91,4 +92,8 @@ export async function getAvailableShells(): Promise<{ label: string; path: strin
 
 export async function selectDirectory(): Promise<string | null> {
   return window.electronAPI.selectDirectory();
+}
+
+export async function selectProgram(): Promise<string | null> {
+  return window.electronAPI.selectProgram();
 }

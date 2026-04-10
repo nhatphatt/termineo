@@ -69,8 +69,14 @@ function getShellLaunchOptions(shell) {
       ? starshipPath.replace(/'/g, "''")
       : "starship";
 
-    // Use --print-full-init | Out-String for proper PowerShell 7+ compatibility
-    const initCommand = `if (Get-Command '${powershellStarship}' -ErrorAction SilentlyContinue) { Invoke-Expression (& '${powershellStarship}' init powershell --print-full-init | Out-String) }`;
+    const initCommand =
+      `$env:TERM_PROGRAM='Termineo'; ` +
+      `$__termineoStarship='${powershellStarship}'; ` +
+      `if (Test-Path $__termineoStarship) { ` +
+      `Invoke-Expression (& $__termineoStarship init powershell --print-full-init | Out-String) ` +
+      `} elseif (Get-Command starship -ErrorAction SilentlyContinue) { ` +
+      `Invoke-Expression (& starship init powershell --print-full-init | Out-String) ` +
+      `}`;
 
     return {
       env,
@@ -108,6 +114,7 @@ process.on("message", (msg) => {
       const defaultShell = os.platform() === "win32" ? "powershell.exe" : (process.env.SHELL || "/bin/bash");
       const shell = shellPath || defaultShell;
       const { args, env } = getShellLaunchOptions(shell);
+      console.log("PTY spawn shell:", shell, "args:", args.join(" "));
 
       try {
         const proc = pty.spawn(shell, args, {

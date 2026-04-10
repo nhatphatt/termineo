@@ -7,9 +7,10 @@ import { useSettingsStore } from "../../stores/settingsStore";
 interface Props {
   onTerminalReady: (terminal: Terminal, fit: () => void) => void;
   onResize?: (cols: number, rows: number) => void;
+  onContainerMouseDown?: () => void;
 }
 
-export function XTermRenderer({ onTerminalReady, onResize }: Props) {
+export function XTermRenderer({ onTerminalReady, onResize, onContainerMouseDown }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const terminalRef = useRef<Terminal | null>(null);
   const fitAddonRef = useRef<FitAddon | null>(null);
@@ -79,6 +80,14 @@ export function XTermRenderer({ onTerminalReady, onResize }: Props) {
     };
     el?.addEventListener("contextmenu", handleContextMenu);
 
+    // Clicking anywhere in the pane focuses the terminal
+    const container = containerRef.current;
+    const handlePointerDown = () => {
+      onContainerMouseDown?.();
+      terminal.focus();
+    };
+    container?.addEventListener("mousedown", handlePointerDown);
+
     terminalRef.current = terminal;
     fitAddonRef.current = fitAddon;
 
@@ -100,6 +109,7 @@ export function XTermRenderer({ onTerminalReady, onResize }: Props) {
       cancelAnimationFrame(rafId);
       ro.disconnect();
       contextMenuCleanup();
+      container?.removeEventListener("mousedown", handlePointerDown);
       terminal.dispose();
       terminalRef.current = null;
       fitAddonRef.current = null;

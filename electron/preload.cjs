@@ -52,5 +52,6 @@ contextBridge.exposeInMainWorld("electronAPI", {
   // Utilities
   getAvailableShells: () => ipcRenderer.invoke("util:getShells"),
   selectDirectory: () => ipcRenderer.invoke("util:selectDirectory"),
+  selectProgram: () => ipcRenderer.invoke("util:selectProgram"),
   openExternal: (url) => ipcRenderer.invoke("util:openExternal", url),
 });
